@@ -1,0 +1,10 @@
+.square {
+    border: 1px solid black;
+    font-weight: bold;
+    width: 40px;
+    height: 40px;
+}
+
+.row {
+    display: block;
+}

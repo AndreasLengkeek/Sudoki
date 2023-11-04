@@ -6,34 +6,42 @@ import { Grid } from "../grid";
 interface SquareProps {
     index: number;
     setValue: (x: number) => void;
-    children: number;
+    children: Cell;
 }
 export function Square({ index, setValue, children}: SquareProps) {
     const borderStyle = index % 3 == 0 ? styles.rightBorder : '';
+    const editableSquare = children.canEdit() ? styles.editableSquare : '';
+
+    const setCell = () => {
+        if (children.canEdit()) {
+            setValue(index)
+        }
+    }
+
     return (
         <button
-            className={`${styles.square} ${borderStyle}`}
-            onClick={() => setValue(index)}>
-            {children != 0 ? children : '\u00A0'}
+            className={`${styles.square} ${editableSquare} ${borderStyle}`}
+            onClick={setCell}>
+            {children.value != 0 ? children.value : '\u00A0'}
         </button>
     );
 }
 
 interface RowProps {
-    arr: number[];
-    index: number;
+    cells: Cell[];
+    rowIndex: number;
     setCell: (x: number, y: number) => void;
 }
-const Row = ({ arr, index, setCell}: RowProps) => {
-    const borderStyle = index % 3 == 0 ? styles.bottomBorder: '';
+const Row = ({ cells, rowIndex, setCell}: RowProps) => {
+    const borderStyle = rowIndex % 3 == 0 ? styles.bottomBorder: '';
 
     return (
         <div className={`${styles.row} ${borderStyle}`}>
-        {arr.map((val, i) => (
+        {cells.map((val, i) => (
             <Square
                 key={i}
                 index={i}
-                setValue={(x) => setCell(x, index)}>
+                setValue={(x) => setCell(x, rowIndex)}>
                     {val}
             </Square>
         ))}
@@ -41,34 +49,96 @@ const Row = ({ arr, index, setCell}: RowProps) => {
     );
 }
 
-export default function Board() {
-    const board = new Grid();
-    // const [board, setBoard] = useState<Grid | undefined>(undefined);
-    useEffect(() => {
-        fetch('https://sudoku-api.vercel.app/api/dosuku?query={newboard(limit:1){grids{value,solution,difficulty}}}')
-            .then(response => response.json())
-            .then(data => {
-                console.log('got data')
-                // var grid = new Grid();
-                board.setGrid(data.newboard.grids[0].value);
-                // setBoard(grid);
-                console.log('loaded', board);
-            });
-    }, []);
-
-    // function onSetCell(x: number, y: number) {
-    //     const newGrid = [...globalBoard]
-    //     globalBoard[y][x] = 2;
-    //     setGrid(newGrid);
-    // }
+interface SelectorProps {
+    selected: number;
+    onSelected: (x: number) => void;
+}
+const Selector = ({selected, onSelected}: SelectorProps) => {
+    const possibleNums = Array.from({length: 10}, (_, i) => i);
 
     return (
-      <>
-        {board.grid ? board.grid.map((val, i) => (
-          <Row key={i} arr={val} index={i} setCell={board.setCell}></Row>
-        )) : (
-            <>loading</>
-        )}
-      </>
+    <>
+        {possibleNums.map((val, i) => {
+            const selectedStyle = selected == val ? styles.selected : '';
+            return (<button
+                key={i}
+                className={`${styles.selectButton} ${selectedStyle}`}
+                onClick={() => onSelected(val)}>
+                    {val}
+                </button>);
+        })}
+    </>
+    )
+}
+
+class Cell {
+    value: number;
+    isInitial: boolean;
+
+    constructor(val: number, isInitial: boolean) {
+        this.value = val;
+        this.isInitial = isInitial;
+    }
+
+    canEdit(): boolean {
+        return this.value == 0 || !this.isInitial
+    }
+}
+
+export default function Board() {
+    const [board, setBoard] = useState<Cell[][]>([]);
+    const [solution, setSolution] = useState<Cell[][]>([]);
+    const [difficulty, setDifficulty] = useState('');
+    const [selectedNumber, setSelectedNumber] = useState(1);
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    function onSetCell(x: number, y: number) {
+        if (solution[y][x].value != selectedNumber) {
+            console.log('error! should be ', solution[y][x].value)
+        }
+        const newGrid = [...board]
+        board[y][x] = new Cell(selectedNumber, false);
+        setBoard(newGrid);
+    }
+
+    function reloadPuzzle() {
+        setBoard([]);
+        fetchData();
+    }
+
+    async function fetchData() {
+        const data = await genBoard();
+        const grid = data.newboard.grids[0];
+        setBoard(grid.value.map((x:number[]) => x.map((y: number) => new Cell(y, true))));
+        setSolution(grid.solution.map((x:number[]) => x.map((y: number) => new Cell(y, true))));
+        setDifficulty(grid.difficulty)
+    }
+
+    return (
+        <>
+            <div className={styles.puzzle}>
+                <div className={styles.puzzleHeader}>
+                    <span>Difficulty: <b>{difficulty}</b></span>
+                    <button className={styles.reload} onClick={reloadPuzzle}>{'\u27F3'}</button>
+                </div>
+                {board.length > 0 ? board.map((val, i) => (
+                    <Row key={i} cells={val} rowIndex={i} setCell={onSetCell}></Row>
+                )) : (
+                    <div>loading</div>
+                )}
+            </div>
+            <div>
+                <Selector onSelected={setSelectedNumber} selected={selectedNumber} />
+            </div>
+        </>
     );
+}
+
+const genBoard = async () => {
+    const res = await fetch('https://sudoku-api.vercel.app/api/dosuku?query={newboard(limit:1){grids{value,solution,difficulty}}}');
+
+    return res.json();
 }

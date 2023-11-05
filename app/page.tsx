@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'Sudoki - by Andreas Lengkeek',
+  manifest: '/manifest.json'
 };
 
 export default function Home() {

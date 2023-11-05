@@ -1,8 +1,9 @@
 'use client'
 import { useEffect, useState } from "react";
 import styles from './square.module.css'
-import { Popup } from "./popup";
 import { Eraser24Regular } from "@fluentui/react-icons";
+import { SuccessfullyCompletedModal } from "./SuccessfullyCompletedModal";
+import { IncorrectCompletedModal } from "./IncorrectCompletedModal";
 
 interface SquareProps {
     index: number;
@@ -143,10 +144,8 @@ export default function Board() {
 
     return (
         <>
-            {showSuccessPopup &&
-                (<Popup text="Congratulations! You have completed the puzzle 🎉" togglePopup={(x) => setShowSuccessPopup(false)} />)}
-            {showIncorrectPopup &&
-                (<Popup text="Not quite right..." togglePopup={(x) => setShowIncorrectPopup(false)} />)}
+            <SuccessfullyCompletedModal open={showSuccessPopup} text="You have completed the puzzle 🎉" title="Congratulations!" togglePopup={(x) => setShowSuccessPopup(false)} />
+            <IncorrectCompletedModal open={showIncorrectPopup} title="Not quite right..." text="You have some incorrent spaces" togglePopup={(x) => setShowIncorrectPopup(false)} />
             <div className={styles.puzzle}>
                 <div className={styles.puzzleHeader}>
                     <span>Difficulty: <b>{difficulty}</b></span>

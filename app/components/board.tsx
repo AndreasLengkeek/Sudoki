@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import styles from './square.module.css'
 import { Popup } from "./popup";
+import { Eraser24Regular } from "@fluentui/react-icons";
 
 interface SquareProps {
     index: number;
@@ -64,7 +65,9 @@ const Selector = ({selected, onSelected}: SelectorProps) => {
                 key={i}
                 className={`${styles.selectButton} ${selectedStyle}`}
                 onClick={() => onSelected(val)}>
-                    {val}
+                    {val == 0 ?
+                    (<Eraser24Regular />) :
+                    val}
                 </button>);
         })}
     </div>

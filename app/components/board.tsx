@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import styles from './square.module.css'
-import { Grid } from "../grid";
+import { Popup } from "./popup";
 
 interface SquareProps {
     index: number;
@@ -57,7 +57,7 @@ const Selector = ({selected, onSelected}: SelectorProps) => {
     const possibleNums = Array.from({length: 10}, (_, i) => i);
 
     return (
-    <>
+    <div className='flex flex-wrap justify-center'>
         {possibleNums.map((val, i) => {
             const selectedStyle = selected == val ? styles.selected : '';
             return (<button
@@ -67,7 +67,7 @@ const Selector = ({selected, onSelected}: SelectorProps) => {
                     {val}
                 </button>);
         })}
-    </>
+    </div>
     )
 }
 
@@ -90,18 +90,39 @@ export default function Board() {
     const [solution, setSolution] = useState<Cell[][]>([]);
     const [difficulty, setDifficulty] = useState('');
     const [selectedNumber, setSelectedNumber] = useState(1);
+    const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+    const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
 
     useEffect(() => {
         fetchData();
     }, []);
 
-    function onSetCell(x: number, y: number) {
-        if (solution[y][x].value != selectedNumber) {
-            console.log('error! should be ', solution[y][x].value)
-        }
+    function onSetCell(col: number, row: number) {
         const newGrid = [...board]
-        board[y][x] = new Cell(selectedNumber, false);
+        newGrid[row][col] = new Cell(selectedNumber, false);
         setBoard(newGrid);
+
+        checkWinCondition();
+    }
+
+    function checkWinCondition() {
+        var isComplete = board.every((rows) => rows.every(col => col.value));
+        if (isComplete) {
+            if (boardsEqual(board, solution)) {
+                setShowSuccessPopup(true);
+            } else {
+                setShowIncorrectPopup(true);
+            }
+        }
+    }
+
+    function boardsEqual(a: Cell[][], b: Cell[][]): boolean {
+        for (var i = 0; i < a.length; ++i) {
+            for (let j = 0; j < a[i].length; j++) {
+                if (a[i][j].value !== b[i][j].value) return false;
+            }
+          }
+          return true;
     }
 
     function reloadPuzzle() {
@@ -119,6 +140,10 @@ export default function Board() {
 
     return (
         <>
+            {showSuccessPopup &&
+                (<Popup text="Congratulations! You have completed the puzzle 🎉" togglePopup={(x) => setShowSuccessPopup(false)} />)}
+            {showIncorrectPopup &&
+                (<Popup text="Not quite right..." togglePopup={(x) => setShowIncorrectPopup(false)} />)}
             <div className={styles.puzzle}>
                 <div className={styles.puzzleHeader}>
                     <span>Difficulty: <b>{difficulty}</b></span>

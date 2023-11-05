@@ -12,7 +12,7 @@
 }
 
 .square {
-    border: 1px solid black;
+    border: 1px solid;
     font-weight: bold;
     width: 40px;
     height: 40px;

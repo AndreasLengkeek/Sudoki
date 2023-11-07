@@ -6,13 +6,13 @@ type TPopup = {
   text: string;
   title: string;
   open: boolean;
-  togglePopup: (value: boolean) => void;
+  togglePopup: (value: boolean, newPuzzle: boolean) => void;
 };
 export const SuccessfullyCompletedModal = ({ open, text, title, togglePopup }: TPopup) => {
 
   return (
     <Transition.Root appear show={open} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={() => togglePopup(false)}>
+      <Dialog as="div" className="relative z-10" onClose={() => togglePopup(false, false)}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -54,13 +54,13 @@ export const SuccessfullyCompletedModal = ({ open, text, title, togglePopup }: T
                   <button
                     type="button"
                     className="justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500 w-auto mb-3"
-                    onClick={() => togglePopup(false)}>
+                    onClick={() => togglePopup(false, true)}>
                     New puzzle
                   </button>
                   <button
                     type="button"
                     className="justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 w-auto"
-                    onClick={() => togglePopup(false)}>
+                    onClick={() => togglePopup(false, false)}>
                     Close
                   </button>
                 </div>

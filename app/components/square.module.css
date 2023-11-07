@@ -11,6 +11,10 @@
     font-size: 24px;
 }
 
+.incorrectStyle {
+    background-color: red;
+}
+
 .square {
     border: 1px solid;
     font-weight: bold;

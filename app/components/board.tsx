@@ -4,6 +4,7 @@ import styles from './square.module.css'
 import { Eraser24Regular } from "@fluentui/react-icons";
 import { SuccessfullyCompletedModal } from "./SuccessfullyCompletedModal";
 import { IncorrectCompletedModal } from "./IncorrectCompletedModal";
+import Sudoku from "../model/sudokusolver";
 
 interface SquareProps {
     index: number;
@@ -13,6 +14,7 @@ interface SquareProps {
 export function Square({ index, setValue, children}: SquareProps) {
     const borderStyle = index % 3 == 0 ? styles.rightBorder : '';
     const editableSquare = children.canEdit() ? styles.editableSquare : '';
+    const incorrectStyle = children.isIncorrect() ? styles.incorrectStyle : '';
 
     const setCell = () => {
         if (children.canEdit()) {
@@ -22,7 +24,7 @@ export function Square({ index, setValue, children}: SquareProps) {
 
     return (
         <button
-            className={`${styles.square} ${editableSquare} ${borderStyle}`}
+            className={`${styles.square} ${editableSquare} ${borderStyle} ${incorrectStyle}`}
             onClick={setCell}>
             {children.value != 0 ? children.value : '\u00A0'}
         </button>
@@ -77,11 +79,21 @@ const Selector = ({selected, onSelected}: SelectorProps) => {
 
 class Cell {
     value: number;
+    solutionVal: number
     isInitial: boolean;
 
-    constructor(val: number, isInitial: boolean) {
+    constructor(val: number, solutionVal: number, isInitial: boolean) {
         this.value = val;
+        this.solutionVal = solutionVal;
         this.isInitial = isInitial;
+    }
+
+    setValue(val: number) {
+        this.value = val;
+    }
+
+    isIncorrect(): boolean {
+        return this.value != 0 && this.value != this.solutionVal;
     }
 
     canEdit(): boolean {
@@ -92,18 +104,19 @@ class Cell {
 export default function Board() {
     const [board, setBoard] = useState<Cell[][]>([]);
     const [solution, setSolution] = useState<Cell[][]>([]);
-    const [difficulty, setDifficulty] = useState('');
+    const [selectedDifficulty, setSelectedDifficulty] = useState(1);
     const [selectedNumber, setSelectedNumber] = useState(1);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
 
     useEffect(() => {
-        fetchData();
+        setSelectedDifficulty(0);
+        fetchData(1);
     }, []);
 
     function onSetCell(col: number, row: number) {
         const newGrid = [...board]
-        newGrid[row][col] = new Cell(selectedNumber, false);
+        newGrid[row][col] = new Cell(selectedNumber, solution[row][col].value, false);
         setBoard(newGrid);
 
         checkWinCondition();
@@ -131,24 +144,43 @@ export default function Board() {
 
     function reloadPuzzle() {
         setBoard([]);
-        fetchData();
+        fetchData(selectedDifficulty);
     }
 
-    async function fetchData() {
-        const data = await genBoard();
-        const grid = data.newboard.grids[0];
-        setBoard(grid.value.map((x:number[]) => x.map((y: number) => new Cell(y, true))));
-        setSolution(grid.solution.map((x:number[]) => x.map((y: number) => new Cell(y, true))));
-        setDifficulty(grid.difficulty)
+    async function fetchData(diff: number) {
+        const data = await genBoard(diff);
+        console.log('found diff', data.difficulty)
+        setBoard(data.value.map((x: number[], xIndex: number) => x.map((y: number, yIndex: number) => new Cell(y, data.solution![xIndex][yIndex], true))));
+        setSolution(data.solution!.map((x: number[], xIndex: number) => x.map((y: number) => new Cell(y, y, true))));
+    }
+
+    function setDifficulty(value: string) {
+        setSelectedDifficulty(Number(value));
+    }
+
+    function successPopupResult(x: boolean, reload: boolean) {
+        setShowSuccessPopup(false);
+        if (reload) {
+            reloadPuzzle();
+        }
     }
 
     return (
         <>
-            <SuccessfullyCompletedModal open={showSuccessPopup} text="You have completed the puzzle 🎉" title="Congratulations!" togglePopup={(x) => setShowSuccessPopup(false)} />
+            <SuccessfullyCompletedModal open={showSuccessPopup} text="You have completed the puzzle 🎉" title="Congratulations!" togglePopup={successPopupResult} />
             <IncorrectCompletedModal open={showIncorrectPopup} title="Not quite right..." text="You have some incorrent spaces" togglePopup={(x) => setShowIncorrectPopup(false)} />
             <div className={styles.puzzle}>
                 <div className={styles.puzzleHeader}>
-                    <span>Difficulty: <b>{difficulty}</b></span>
+                    <div className='py-2'>
+                        <span>Difficulty:</span>
+                        <select
+                            className='inline ml-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+                            onChange={(e) => setDifficulty(e.target.value)}>
+                                <option value={'0'}>Easy</option>
+                                <option value={'1'}>Medium</option>
+                                <option value={'2'}>Hard</option>
+                        </select>
+                    </div>
                     <button className={styles.reload} onClick={reloadPuzzle}>{'\u27F3'}</button>
                 </div>
                 {board.length > 0 ? board.map((val, i) => (
@@ -164,8 +196,20 @@ export default function Board() {
     );
 }
 
-const genBoard = async () => {
-    const res = await fetch('https://sudoku-api.vercel.app/api/dosuku?query={newboard(limit:1){grids{value,solution,difficulty}}}');
+const genBoard = async (selectedDifficulty: number) => {
+    const s = new Sudoku({ mode: "9" });
+    console.log('selected diff', selectedDifficulty)
+    s.generate(selectedDifficulty);
+    const grid = s.grid;
 
-    return res.json();
+    const nsudoku = new Sudoku();
+    nsudoku.setBoard(grid.map(x => x.slice()));
+    const solgrid = nsudoku.solve();
+
+    console.log('board count',s.getCount());
+    return {
+        value: grid,
+        solution: solgrid,
+        difficulty: s.getDifficulty(),
+    };
 }

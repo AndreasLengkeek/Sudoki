@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import styles from './square.module.css'
-import { Eraser24Regular } from "@fluentui/react-icons";
+import { Edit24Regular, Eraser24Regular, Lightbulb24Regular } from "@fluentui/react-icons";
 import { SuccessfullyCompletedModal } from "./SuccessfullyCompletedModal";
 import { IncorrectCompletedModal } from "./IncorrectCompletedModal";
 import Sudoku from "../model/sudokusolver";
@@ -58,7 +58,7 @@ interface SelectorProps {
     onSelected: (x: number) => void;
 }
 const Selector = ({selected, onSelected}: SelectorProps) => {
-    const possibleNums = Array.from({length: 10}, (_, i) => i);
+    const possibleNums = Array.from({length: 9}, (_, i) => i+1);
 
     return (
     <div className='flex flex-wrap justify-center'>
@@ -68,13 +68,34 @@ const Selector = ({selected, onSelected}: SelectorProps) => {
                 key={i}
                 className={`${styles.selectButton} ${selectedStyle}`}
                 onClick={() => onSelected(val)}>
-                    {val == 0 ?
-                    (<Eraser24Regular />) :
-                    val}
+                    {val}
                 </button>);
         })}
     </div>
     )
+}
+
+interface OptionsProps {
+    selectedNum: number;
+    onSelected: (x: number) => void;
+}
+const Options = ({selectedNum, onSelected}: OptionsProps) => {
+    const selectedStyle = selectedNum == 0 ? styles.selected : '';
+    return (
+        <div className='flex flex-wrap justify-center'>
+            <button
+                className={`${styles.selectButton} ${selectedStyle}`}
+                onClick={() => onSelected(0)}>
+                    <Eraser24Regular />
+            </button>
+            <button className={`${styles.selectButton} ${styles.selectDisable}`} disabled title="Hint">
+                <Lightbulb24Regular />
+            </button>
+            <button className={`${styles.selectButton} ${styles.selectDisable}`} disabled title="Pencil Marks">
+                <Edit24Regular />
+            </button>
+        </div>
+    );
 }
 
 class Cell {
@@ -188,6 +209,9 @@ export default function Board() {
                 )) : (
                     <div>loading</div>
                 )}
+            </div>
+            <div>
+                <Options onSelected={setSelectedNumber} selectedNum={selectedNumber} />
             </div>
             <div>
                 <Selector onSelected={setSelectedNumber} selected={selectedNumber} />

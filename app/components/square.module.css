@@ -1,5 +1,5 @@
 .puzzle {
-    width: 355px;
+    width: 535px;
 }
 
 .puzzleHeader {
@@ -18,8 +18,8 @@
 .square {
     border: 1px solid;
     font-weight: bold;
-    width: 40px;
-    height: 40px;
+    width: 60px;
+    height: 60px;
     margin-left: -1px;
     margin-top: -1px;
 }
@@ -45,18 +45,24 @@
 }
 
 .selectButton {
-    margin: 20px 3px;
+    margin: 10px 3px;
     width: 40px;
-    height: 40px;
+    height: 50px;
+}
+
+.selectDisable {
+    color: grey;
 }
 
 .selected {
-    background-color: darkgrey;
+    background-color: #009eff;
+    border-radius: 5px;
     font-weight: bold;
     color: white;
 }
 
-.selectButton:hover {
-    background-color: grey;
+.selectButton:not(.selectDisable):hover {
+    background-color: #00c0ff;
+    border-radius: 5px;
     color: white;
 }

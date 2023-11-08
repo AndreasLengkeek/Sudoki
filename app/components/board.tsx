@@ -149,9 +149,9 @@ export default function Board() {
 
     async function fetchData(diff: number) {
         const data = await genBoard(diff);
-        console.log('found diff', data.difficulty)
         setBoard(data.value.map((x: number[], xIndex: number) => x.map((y: number, yIndex: number) => new Cell(y, data.solution![xIndex][yIndex], true))));
-        setSolution(data.solution!.map((x: number[], xIndex: number) => x.map((y: number) => new Cell(y, y, true))));
+        setSolution(data.solution!.map((x: number[]) => x.map((y: number) => new Cell(y, y, true))));
+        console.log('found solution', data.solution);
     }
 
     function setDifficulty(value: string) {
@@ -198,7 +198,6 @@ export default function Board() {
 
 const genBoard = async (selectedDifficulty: number) => {
     const s = new Sudoku({ mode: "9" });
-    console.log('selected diff', selectedDifficulty)
     s.generate(selectedDifficulty);
     const grid = s.grid;
 
@@ -206,7 +205,6 @@ const genBoard = async (selectedDifficulty: number) => {
     nsudoku.setBoard(grid.map(x => x.slice()));
     const solgrid = nsudoku.solve();
 
-    console.log('board count',s.getCount());
     return {
         value: grid,
         solution: solgrid,

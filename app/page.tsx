@@ -2,7 +2,7 @@ import Board from './components/board';
 import fs from 'fs';
 import { Metadata } from 'next';
 
-export function getStaticProps(): any[] {
+function getStaticProps(): any[] {
   // generate puzzles (easy): java -jar hodoku.jar /s /sl 0 /o easy.txt
   // generate solutions: java -jar hodoku.jar /vs /bs puzzles.txt /o answers.txt
   const puzzleFile = fs.readFileSync('./app/assets/puzzles.txt', 'utf8');

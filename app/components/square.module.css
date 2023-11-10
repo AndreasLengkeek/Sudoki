@@ -1,5 +1,5 @@
 .puzzle {
-    width: 535px;
+    width: 445px;
 }
 
 .puzzleHeader {
@@ -8,7 +8,7 @@
 }
 
 .reload {
-    font-size: 24px;
+    font-size: 32px;
 }
 
 .incorrectStyle {
@@ -18,8 +18,8 @@
 .square {
     border: 1px solid;
     font-weight: bold;
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     margin-left: -1px;
     margin-top: -1px;
 }
@@ -37,7 +37,8 @@
 }
 
 .bottomBorder {
-    margin-top: 1px;
+    /* margin-top: 1px; */
+    border-top: 1px solid;
 }
 
 .rightBorder {

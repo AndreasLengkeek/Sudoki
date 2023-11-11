@@ -3,12 +3,11 @@ import { ExclamationTriangleIcon, TrophyIcon } from '@heroicons/react/24/outline
 import { Fragment } from 'react';
 
 type TPopup = {
-  text: string;
-  title: string;
   open: boolean;
+  time: string;
   togglePopup: (value: boolean, newPuzzle: boolean) => void;
 };
-export const SuccessfullyCompletedModal = ({ open, text, title, togglePopup }: TPopup) => {
+export const SuccessfullyCompletedModal = ({ open, time, togglePopup }: TPopup) => {
 
   return (
     <Transition.Root appear show={open} as={Fragment}>
@@ -42,10 +41,11 @@ export const SuccessfullyCompletedModal = ({ open, text, title, togglePopup }: T
                     </div>
                     <div className="mt-3 text-center sm:ml-4 sm:mt-0">
                       <h3 className="text-base font-semibold leading-6 text-gray-900" id="modal-title">
-                        {title}
+                        Congratulations!
                       </h3>
                       <div className="mt-2">
-                        <p className="text-sm text-gray-500">{text}</p>
+                        <p className="text-sm text-gray-500">You have completed the puzzle 🎉</p>
+                        <p className="text-sm text-gray-500">It took: {time}</p>
                       </div>
                     </div>
                   </div>

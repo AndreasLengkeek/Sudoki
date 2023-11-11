@@ -6,12 +6,12 @@ interface OptionsProps {
     onSelected: (x: string) => void;
 }
 export const Options = ({selectedNum, onSelected}: OptionsProps) => {
-    const selectedStyle = selectedNum == '.' ? styles.selected : '';
+    const selectedStyle = selectedNum == '0' ? styles.selected : '';
     return (
         <div className='flex flex-wrap justify-center'>
             <button
                 className={`${styles.selectButton} ${selectedStyle}`}
-                onClick={() => onSelected('.')}>
+                onClick={() => onSelected('0')}>
                     <Eraser24Regular />
             </button>
             <button className={`${styles.selectButton} ${styles.selectDisable}`} disabled title="Hint">

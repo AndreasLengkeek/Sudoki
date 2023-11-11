@@ -8,6 +8,7 @@ import { Row } from "./row";
 import Cell from "../model/cell";
 import { Options } from "./options";
 import { Selector } from "./selector";
+import { useStopwatch } from "react-timer-hook";
 
 interface BoardProps {
     games: any[]
@@ -21,6 +22,15 @@ export default function Board({ games }: BoardProps) {
     const [selectedNumber, setSelectedNumber] = useState('1');
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
+    const [hideTimer, setHideTimer] = useState(false);
+    const {
+        seconds,
+        minutes,
+        isRunning,
+        start,
+        pause,
+        reset,
+      } = useStopwatch({ autoStart: true });
 
     useEffect(() => {
         setSelectedDifficulty('Medium');
@@ -39,6 +49,7 @@ export default function Board({ games }: BoardProps) {
         var isComplete = board.every((rows) => rows.every(col => col.value != '0'));
         if (isComplete) {
             if (boardsEqual(board, solution)) {
+                pause();
                 setShowSuccessPopup(true);
             } else {
                 setShowIncorrectPopup(true);
@@ -57,9 +68,10 @@ export default function Board({ games }: BoardProps) {
 
     function reloadPuzzle() {
         setBoard([]);
+        start();
+        reset();
 
         const diffs = puzzles.filter(p => p.difficulty == selectedDifficulty)
-        console.log('total', selectedDifficulty, diffs.length)
         const game = diffs[Math.floor(Math.random()*diffs.length)];
         const data = game;
         console.log('found game', data)
@@ -76,14 +88,29 @@ export default function Board({ games }: BoardProps) {
 
     function successPopupResult(x: boolean, reload: boolean) {
         setShowSuccessPopup(false);
+        pause();
         if (reload) {
             reloadPuzzle();
         }
     }
 
+    function getFormattedTime(): string {
+        return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+    }
+
+    function toggleTimer() {
+        if (!isRunning) {
+            start();
+            reset();
+        } else {
+            reset();
+            pause();
+        }
+    }
+
     return (
         <>
-            <SuccessfullyCompletedModal open={showSuccessPopup} text="You have completed the puzzle 🎉" title="Congratulations!" togglePopup={successPopupResult} />
+            <SuccessfullyCompletedModal open={showSuccessPopup} togglePopup={successPopupResult} time={getFormattedTime()} />
             <IncorrectCompletedModal open={showIncorrectPopup} title="Not quite right..." text="You have some incorrent spaces" togglePopup={(x) => setShowIncorrectPopup(false)} />
             <div className={styles.puzzle}>
                 <div className={styles.puzzleHeader}>
@@ -100,6 +127,22 @@ export default function Board({ games }: BoardProps) {
                     </div>
                     <div className='mt-4'>
                         <span>{index}</span>
+                    </div>
+                    <div className='mt-4'>
+                        <span onClick={() => setHideTimer(!hideTimer)}>
+                            {hideTimer ?
+                                (
+                                    <span>--:--</span>
+                                ) :
+                                (
+                                    <span>
+                                        {minutes.toString().padStart(2,'0')}:
+                                        {seconds.toString().padStart(2,'0')}
+                                    </span>
+                                )
+                            }
+
+                        </span>
                     </div>
                     <button className={styles.reload} onClick={reloadPuzzle}>{'\u27F3'}</button>
                 </div>

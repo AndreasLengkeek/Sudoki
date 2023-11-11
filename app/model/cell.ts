@@ -14,10 +14,10 @@ export default class Cell {
     }
 
     isIncorrect(): boolean {
-        return this.value != '.' && this.value != this.solutionVal;
+        return this.value != '0' && this.value != this.solutionVal;
     }
 
     canEdit(): boolean {
-        return this.value == '.' || !this.isInitial
+        return this.value == '0' || !this.isInitial
     }
 }

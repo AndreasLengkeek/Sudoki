@@ -21,7 +21,7 @@ export default function Square({ index, setValue, children}: SquareProps) {
         <button
             className={`${styles.square} ${editableSquare} ${borderStyle} ${incorrectStyle}`}
             onClick={setCell}>
-            {children.value != '.' ? children.value : '\u00A0'}
+            {children.value != '0' ? children.value : '\u00A0'}
         </button>
     );
 }

@@ -1,4 +1,4 @@
-export default class Soduku {
+export default class Sudoku {
     index: string;
     puzzle: string[][];
     solution: string[][];

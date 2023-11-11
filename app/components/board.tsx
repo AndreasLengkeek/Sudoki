@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { SuccessfullyCompletedModal } from "./SuccessfullyCompletedModal";
 import { IncorrectCompletedModal } from "./IncorrectCompletedModal";
-import Soduku from "../model/soduku";
+import Sudoku from "../model/sudoku";
 import styles from './square.module.css'
 import { Row } from "./row";
 import Cell from "../model/cell";
@@ -13,16 +13,17 @@ interface BoardProps {
     games: any[]
 };
 export default function Board({ games }: BoardProps) {
+    const puzzles = games.map(g => new Sudoku(g.index, g.puzzle, g.sol, g.diff));
     const [board, setBoard] = useState<Cell[][]>([]);
     const [solution, setSolution] = useState<Cell[][]>([]);
-    const [selectedDifficulty, setSelectedDifficulty] = useState(1);
+    const [selectedDifficulty, setSelectedDifficulty] = useState('Medium');
     const [index, setIndex] = useState('');
     const [selectedNumber, setSelectedNumber] = useState('1');
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
     const [showIncorrectPopup, setShowIncorrectPopup] = useState(false);
 
     useEffect(() => {
-        setSelectedDifficulty(1);
+        setSelectedDifficulty('Medium');
         reloadPuzzle();
     }, []);
 
@@ -35,7 +36,7 @@ export default function Board({ games }: BoardProps) {
     }
 
     function checkWinCondition() {
-        var isComplete = board.every((rows) => rows.every(col => col.value != '.'));
+        var isComplete = board.every((rows) => rows.every(col => col.value != '0'));
         if (isComplete) {
             if (boardsEqual(board, solution)) {
                 setShowSuccessPopup(true);
@@ -57,11 +58,10 @@ export default function Board({ games }: BoardProps) {
     function reloadPuzzle() {
         setBoard([]);
 
-        const rand = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-        const min = 1+(300*selectedDifficulty);
-        const max = 300*(selectedDifficulty+1);
-        const game = games[rand(min, max)];
-        const data = new Soduku(game.row, game.puzzle, game.sol, game.diff)
+        const diffs = puzzles.filter(p => p.difficulty == selectedDifficulty)
+        console.log('total', selectedDifficulty, diffs.length)
+        const game = diffs[Math.floor(Math.random()*diffs.length)];
+        const data = game;
         console.log('found game', data)
 
         setIndex(data.index);
@@ -71,7 +71,7 @@ export default function Board({ games }: BoardProps) {
     }
 
     function setDifficulty(value: string) {
-        setSelectedDifficulty(Number(value));
+        setSelectedDifficulty(value);
     }
 
     function successPopupResult(x: boolean, reload: boolean) {
@@ -91,11 +91,11 @@ export default function Board({ games }: BoardProps) {
                         <span>Difficulty:</span>
                         <select
                             className='inline ml-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-blue-500 focus:border-blue-500 block dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                            onChange={(e) => setDifficulty(e.target.value)}>
-                                <option value={'0'}>Easy</option>
-                                <option value={'1'} selected>Medium</option>
-                                <option value={'2'}>Hard</option>
-                                <option value={'3'}>Unfair</option>
+                            onChange={(e) => setDifficulty(e.target.value)} value={selectedDifficulty}>
+                                <option value={'Easy'}>Easy</option>
+                                <option value={'Medium'}>Medium</option>
+                                <option value={'Hard'}>Hard</option>
+                                <option value={'Unfair'}>Unfair</option>
                         </select>
                     </div>
                     <div className='mt-4'>

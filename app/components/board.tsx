@@ -72,6 +72,7 @@ export default function Board({ games }: BoardProps) {
         reset();
 
         const diffs = puzzles.filter(p => p.difficulty == selectedDifficulty)
+        console.log('total ', selectedDifficulty, diffs.length)
         const game = diffs[Math.floor(Math.random()*diffs.length)];
         const data = game;
         console.log('found game', data)
@@ -123,6 +124,7 @@ export default function Board({ games }: BoardProps) {
                                 <option value={'Medium'}>Medium</option>
                                 <option value={'Hard'}>Hard</option>
                                 <option value={'Unfair'}>Unfair</option>
+                                <option value={'Extreme'}>Extreme</option>
                         </select>
                     </div>
                     <div className='mt-4'>
@@ -136,8 +138,7 @@ export default function Board({ games }: BoardProps) {
                                 ) :
                                 (
                                     <span>
-                                        {minutes.toString().padStart(2,'0')}:
-                                        {seconds.toString().padStart(2,'0')}
+                                        {getFormattedTime()}
                                     </span>
                                 )
                             }
